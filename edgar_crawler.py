@@ -1,27 +1,18 @@
 def edgar_crawler(ticker,filingtype,sincedate):
     #Sincedate has to be in the form 'YYYY-MM-DD'
     # import our libraries
-    import re
     import requests
-    import unicodedata
     from bs4 import BeautifulSoup
-    import pprint
     import pandas
-    import sys
     import os
     import timeit
-    import numpy as np
-    import logging
-    sys.setrecursionlimit(100000)
-    import urllib.request
-    import shutil
     from datetime import date
-
+    
     start = timeit.default_timer()
-
+    ticker=ticker.lower()              ## EDGAR seems to not recognize capitalized tickers....
     dir = 'sec_edgar_filings/'
     if os.path.exists(dir)==False:
-        print("Making a home directory for the filings")
+        print("Making a home directory 'sec_edgar_filings' for the filings")
         os.makedirs(dir)
 
     cik_db=pandas.read_csv('ticker_cik.txt', sep='\t', lineterminator='\n')
@@ -91,7 +82,6 @@ def edgar_crawler(ticker,filingtype,sincedate):
         
     # Loop through the filings found on the results page
     for z in range(0,len(master_list_xml)):
-        # We want only the annual report from 2000-01-01
         if master_list_xml[z][accession_num_saved[z]]['file_info']['filing_date']>=sincedate: 
             filing_date=master_list_xml[z][accession_num_saved[z]]['file_info']['filing_date']
             url_2=master_list_xml[z][accession_num_saved[z]]['request_info']['link']
@@ -112,7 +102,7 @@ def edgar_crawler(ticker,filingtype,sincedate):
                     finalhtml=finalhtml.replace('/ix?doc=/','')
 
             except:
-                print('Invalid file from:',master_list_xml[z][accession_num_saved[z]]['file_info']['filing_date'],'\n')
+                print('Encounterd an invalid file from:',master_list_xml[z][accession_num_saved[z]]['file_info']['filing_date'],'\n')
 
             # grab the response
             response = requests.get(finalhtml, stream=True)
